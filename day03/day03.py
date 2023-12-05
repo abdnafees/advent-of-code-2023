@@ -1,4 +1,3 @@
-from operator import is_
 import re
 
 
@@ -66,4 +65,41 @@ def part01(schematic):
     return total
 
 
+def part02(schematic):
+    lines = schematic.split("\n")
+    height = len(lines)
+    width = len(lines[0])
+    total_ratio_sum = 0
+    pattern = re.compile(r"\d{1,3}")  # Pattern to find numbers up to 3 digits
+
+    for x, line in enumerate(lines):
+        for match in re.finditer("\*", line):
+            gear_start, gear_stop = match.span()
+            nums = []
+
+            # Check vertically (above and below)
+            for row in (1, -1):
+                if 0 <= x + row < height:  # Ensure within grid bounds
+                    for num_match in pattern.finditer(lines[x + row]):
+                        num_start, num_stop = num_match.span()
+                        if (
+                            gear_start - 1 <= num_start <= gear_stop
+                            or gear_start <= num_stop <= gear_stop + 1
+                        ):
+                            nums.append(num_match.group())
+
+            # Check immediate left and right on the same line
+            for num_match in pattern.finditer(line):
+                num_start, num_stop = num_match.span()
+                if num_stop == gear_start or num_start == gear_stop:
+                    nums.append(num_match.group())
+
+            # Calculate gear ratio if two numbers are found
+            if len(nums) == 2:
+                total_ratio_sum += int(nums[0]) * int(nums[1])
+
+    return total_ratio_sum
+
+
 print(part01(input))
+print(part02(input))
